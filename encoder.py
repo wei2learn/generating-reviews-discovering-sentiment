@@ -81,7 +81,7 @@ def mlstm(inputs, c, h, M, ndim, scope='lstm', wn=False):
             h = o*tf.tanh(c)
         inputs[idx] = h
         cs.append(c)
-    cs = tf.unstack(cs)
+    cs = tf.stack(cs)
     return inputs, cs, c, h
 
 
@@ -96,7 +96,7 @@ def model(X, S, M=None, reuse=False):
         hs = tf.reshape(tf.concat(hs, 1), [-1, hps.nhidden])
         logits = fc(
             hs, hps.nvocab, act=lambda x: x, wn=hps.out_wn, scope='out')
-    states = tf.unstack([cfinal, hfinal], axis=0)
+    states = tf.stack([cfinal, hfinal], axis=0)
     return cells, states, logits
 
 
@@ -272,9 +272,10 @@ class Model(object):
 
 if __name__ == '__main__':
     model=Model()
-    text = ['demo!', 'it\'s second to none','it was a nice day','it was a great day','it was a bad day','It was a wonderful day','It was an excellent day','It was a super excellent day','It was such a bad bad day ','It was such a bad bad bad day']
+    text = ['it\'s terrible', 'it\'s second to none','it was a nice day','it was a great day','it was a bad day','It was a wonderful day','It was an excellent day','It was a super excellent day','It was such a bad bad day ','It was such a bad bad bad day']
     text_features = model.transform(text)
     #17.660 seconds to transform 8 examples
     for i in range(len(text)):
         sentiment = text_features[i, 2388]
         print(text[i],sentiment)
+    print(model.generate_sequence("I couldn’t figure out", override= {2388 : 1.0}))
